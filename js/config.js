@@ -5,7 +5,9 @@ export const APP_CONFIG = {
   PADDING: 20,
   MODEL_URL: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/',
   PIECE_SIZE: 150,
-  PINCH_THRESHOLD: 35
+  PINCH_THRESHOLD: 35,
+  CURSOR_SMOOTHING: 0.28,
+  HAND_LOOP_INTERVAL: 40
 };
 
 export const INITIAL_STATE = {

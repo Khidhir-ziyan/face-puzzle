@@ -22,102 +22,78 @@
 
 <body>
   <div class="page-shell">
-    <header class="hero-panel">
-      <div class="hero-copy">
-        <p class="eyebrow">Privacy-first camera puzzle</p>
-        <h1>PuzzleFace Cam</h1>
-        <p class="hero-text">
-          Turn a smile, a peace sign, or a tap into a tactile portrait puzzle — all inside your browser, with every step
-          staying on your device.
-        </p>
-        <div class="hero-pills">
-          <span class="hero-pill">Smile for 1s</span>
-          <span class="hero-pill">Peace sign for 1s</span>
-          <span class="hero-pill">Manual capture</span>
-        </div>
+
+    <!-- Full-screen camera background -->
+    <div class="camera-bg">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
+
+      <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner mb-4"></div>
+        <h3>Memuat Model AI...</h3>
+        <p id="loading-text">Menginisialisasi (0/3)</p>
       </div>
 
-      <div class="hero-side">
-        <div class="stat-card">
-          <span>100%</span>
-          <p>client-side</p>
-        </div>
-        <div class="stat-card accent">
-          <span>3×3</span>
-          <p>portrait puzzle</p>
-        </div>
+      <div id="countdown-overlay" class="countdown-overlay hidden">
+        <span id="countdown-text">1.0</span>
       </div>
-    </header>
-
-    <main class="app-grid">
-      <section id="camera-section" class="studio-card">
-        <div class="card-top">
-          <div>
-            <p class="card-label">Live capture</p>
-            <h2>Camera stage</h2>
-          </div>
-          <div class="badge-row">
-            <span id="badge-smile" class="badge">Senyum 😄</span>
-            <span id="badge-peace" class="badge">Damai ✌️</span>
-          </div>
-        </div>
-
-        <div id="loading-overlay" class="loading-overlay">
-          <div class="spinner mb-4"></div>
-          <h3>Memuat Model AI...</h3>
-          <p id="loading-text">Menginisialisasi (0/3)</p>
-        </div>
-
-        <div class="camera-frame">
-          <video id="video" autoplay playsinline muted></video>
-          <canvas id="overlay"></canvas>
-
-          <div id="countdown-overlay" class="countdown-overlay hidden">
-            <span id="countdown-text">1.0</span>
-          </div>
-        </div>
-
-        <div class="controls">
-          <p id="app-status">Menunggu model...</p>
-          <div class="button-row">
-            <button id="btn-capture" disabled>
-              Tangkap Manual
-            </button>
-            <button id="btn-reset" class="secondary hidden">
-              Ulangi
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section id="puzzle-section" class="studio-card puzzle-card">
-        <div class="card-top">
-          <div>
-            <p class="card-label">Interactive result</p>
-            <h2 id="puzzle-title">Area Puzzle</h2>
-          </div>
-          <div class="card-hint">Tap two pieces</div>
-        </div>
-
-        <p id="puzzle-instructions" class="puzzle-copy">Tangkap wajah untuk menghasilkan puzzle.</p>
-
-        <div id="puzzle-grid" class="puzzle-grid">
-          <div id="finger-cursor" class="finger-cursor hidden"></div>
-        </div>
-        <canvas id="capture-canvas" class="hidden"></canvas>
-      </section>
-    </main>
-
-    <p class="footer-note">No uploads · No accounts · Everything stays in your browser</p>
-  </div>
-
-  <div id="message-modal" class="modal hidden opacity-0">
-    <div id="message-modal-content" class="modal-card">
-      <div id="message-icon" class="text-4xl mb-4">🔔</div>
-      <h3 id="message-title">Pesan</h3>
-      <p id="message-body">Detail di sini.</p>
-      <button id="btn-close-modal">Mengerti</button>
     </div>
+
+    <!-- Content layer on top of camera -->
+    <div class="content-layer">
+
+      <!-- Top bar -->
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <p class="eyebrow">Privacy-first camera puzzle</p>
+          <h1>PuzzleFace Cam</h1>
+        </div>
+        <div class="badge-row">
+          <span id="badge-smile" class="badge">Senyum 😄</span>
+          <span id="badge-peace" class="badge">Damai ✌️</span>
+        </div>
+      </header>
+
+      <!-- Center: puzzle card -->
+      <main class="center-content">
+        <section id="puzzle-section" class="puzzle-card opacity-50 pointer-events-none">
+          <div class="card-top">
+            <div>
+              <p class="card-label">Interactive result</p>
+              <h2 id="puzzle-title">Area Puzzle</h2>
+            </div>
+            <div class="card-hint">Tap two pieces</div>
+          </div>
+          <p id="puzzle-instructions" class="puzzle-copy">Tangkap wajah untuk menghasilkan puzzle.</p>
+          <div id="puzzle-grid" class="puzzle-grid">
+            <div id="finger-cursor" class="finger-cursor hidden"></div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Bottom bar -->
+      <div class="bottom-bar">
+        <p id="app-status">Menunggu model...</p>
+        <div class="button-row">
+          <button id="btn-capture" disabled>Tangkap Manual</button>
+          <button id="btn-reset" class="secondary hidden">Ulangi</button>
+        </div>
+        <p class="footer-note">No uploads · No accounts · Everything stays in your browser</p>
+      </div>
+
+    </div>
+
+    <canvas id="capture-canvas" class="hidden"></canvas>
+
+    <div id="message-modal" class="modal hidden opacity-0">
+      <div id="message-modal-content" class="modal-card">
+        <div id="message-icon" class="text-4xl mb-4">🔔</div>
+        <h3 id="message-title">Pesan</h3>
+        <p id="message-body">Detail di sini.</p>
+        <button id="btn-close-modal">Mengerti</button>
+      </div>
+    </div>
+
   </div>
 
   <script type="module" src="./js/main.js"></script>

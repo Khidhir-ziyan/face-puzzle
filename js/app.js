@@ -9,6 +9,8 @@ export class PuzzleFaceApp {
     this.handposeModel = null;
     this.currentGestureType = null;
     this.wasPinching = false;
+    this.smoothX = 0.5;
+    this.smoothY = 0.5;
     this.elements = this.ui.elements;
   }
 
@@ -349,7 +351,7 @@ export class PuzzleFaceApp {
     }
 
     if (this.state.handDetectionInProgress || !this.handposeModel) {
-      window.setTimeout(() => this.detectPuzzleHandLoop(), 50);
+      window.setTimeout(() => this.detectPuzzleHandLoop(), APP_CONFIG.HAND_LOOP_INTERVAL);
       return;
     }
 
@@ -359,24 +361,28 @@ export class PuzzleFaceApp {
       .then((predictions) => {
         if (predictions.length > 0 && this.state.puzzleActive) {
           const landmarks = predictions[0].landmarks;
+          const indexMcp = landmarks[5];
           const indexTip = landmarks[8];
           const thumbTip = landmarks[4];
 
           const vw = this.elements.video.videoWidth;
           const vh = this.elements.video.videoHeight;
 
-          const mx = Math.max(0, Math.min(vw, vw - indexTip[0]));
-          const my = Math.max(0, Math.min(vh, indexTip[1]));
+          const rawX = Math.max(0, Math.min(vw, vw - indexMcp[0]));
+          const rawY = Math.max(0, Math.min(vh, indexMcp[1]));
 
-          const nx = mx / vw;
-          const ny = my / vh;
+          const targetX = rawX / vw;
+          const targetY = rawY / vh;
 
-          const col = Math.min(APP_CONFIG.GRID_SIZE - 1, Math.floor(nx * APP_CONFIG.GRID_SIZE));
-          const row = Math.min(APP_CONFIG.GRID_SIZE - 1, Math.floor(ny * APP_CONFIG.GRID_SIZE));
+          this.smoothX += (targetX - this.smoothX) * APP_CONFIG.CURSOR_SMOOTHING;
+          this.smoothY += (targetY - this.smoothY) * APP_CONFIG.CURSOR_SMOOTHING;
+
+          const col = Math.min(APP_CONFIG.GRID_SIZE - 1, Math.floor(this.smoothX * APP_CONFIG.GRID_SIZE));
+          const row = Math.min(APP_CONFIG.GRID_SIZE - 1, Math.floor(this.smoothY * APP_CONFIG.GRID_SIZE));
           const cellIndex = row * APP_CONFIG.GRID_SIZE + col;
 
           this.ui.showFingerCursor();
-          this.ui.updateFingerCursor(nx * 100, ny * 100);
+          this.ui.updateFingerCursor(this.smoothX * 100, this.smoothY * 100);
           this.ui.highlightPuzzleCell(cellIndex);
 
           const dx = thumbTip[0] - indexTip[0];
@@ -403,7 +409,7 @@ export class PuzzleFaceApp {
       .finally(() => {
         this.state.handDetectionInProgress = false;
         if (this.state.puzzleActive) {
-          window.setTimeout(() => this.detectPuzzleHandLoop(), 50);
+          window.setTimeout(() => this.detectPuzzleHandLoop(), APP_CONFIG.HAND_LOOP_INTERVAL);
         }
       });
   }
@@ -414,6 +420,8 @@ export class PuzzleFaceApp {
     this.state.pieces = [];
     this.currentGestureType = null;
     this.wasPinching = false;
+    this.smoothX = 0.5;
+    this.smoothY = 0.5;
 
     while (this.elements.puzzleGrid.children.length > 1) {
       this.elements.puzzleGrid.removeChild(this.elements.puzzleGrid.lastChild);
