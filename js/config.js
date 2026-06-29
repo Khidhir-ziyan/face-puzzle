@@ -4,7 +4,8 @@ export const APP_CONFIG = {
   GRID_SIZE: 3,
   PADDING: 20,
   MODEL_URL: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/',
-  PIECE_SIZE: 150
+  PIECE_SIZE: 150,
+  PINCH_THRESHOLD: 35
 };
 
 export const INITIAL_STATE = {

@@ -387,6 +387,25 @@ button.secondary:hover {
   z-index: 10;
 }
 
+.puzzle-piece.hovered {
+  border-color: rgba(110, 242, 214, 0.5);
+  box-shadow: 0 0 12px rgba(110, 242, 214, 0.15);
+}
+
+.finger-cursor {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(110, 242, 214, 0.85);
+  border: 2px solid #fff;
+  box-shadow: 0 0 20px rgba(110, 242, 214, 0.5), 0 0 40px rgba(110, 242, 214, 0.2);
+  pointer-events: none;
+  z-index: 15;
+  transform: translate(-50%, -50%);
+  transition: left 0.08s linear, top 0.08s linear;
+}
+
 .footer-note {
   margin-top: 1rem;
   text-align: center;

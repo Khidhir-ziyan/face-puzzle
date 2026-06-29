@@ -8,6 +8,7 @@ export class PuzzleFaceApp {
     this.ui = createUiController();
     this.handposeModel = null;
     this.currentGestureType = null;
+    this.wasPinching = false;
     this.elements = this.ui.elements;
   }
 
@@ -243,7 +244,9 @@ export class PuzzleFaceApp {
 
   generatePuzzle(sourceCanvas, sx, sy, size) {
     this.state.pieces = [];
-    this.elements.puzzleGrid.innerHTML = '';
+    while (this.elements.puzzleGrid.children.length > 1) {
+      this.elements.puzzleGrid.removeChild(this.elements.puzzleGrid.lastChild);
+    }
 
     const pieceSizeSource = size / APP_CONFIG.GRID_SIZE;
     const totalPieces = APP_CONFIG.GRID_SIZE * APP_CONFIG.GRID_SIZE;
@@ -288,8 +291,9 @@ export class PuzzleFaceApp {
     this.ui.setCaptureButtonDisabled(true);
     this.ui.setResetVisible(true);
     this.ui.setPuzzleSectionActive(true);
-    this.ui.setPuzzleCopy('Selesaikan Puzzle!', 'Klik dua bagian untuk menukar posisinya.');
+    this.ui.setPuzzleCopy('Selesaikan Puzzle!', 'Klik dua bagian atau gunakan jari telunjuk + cubit untuk menukar.');
     this.ui.updateStatus('Puzzle Dibuat! Tukar bagian untuk menyelesaikan.', 'text-blue-400');
+    this.detectPuzzleHandLoop();
   }
 
   renderPuzzle() {
@@ -327,6 +331,9 @@ export class PuzzleFaceApp {
 
     if (isSolved) {
       this.state.puzzleActive = false;
+      this.wasPinching = false;
+      this.ui.hideFingerCursor();
+      this.ui.clearPuzzleHighlight();
       this.ui.setPuzzleCopy('Selesai!', 'Kerja bagus! Klik ulangi untuk mencoba lagi.');
       this.ui.updateStatus('Puzzle Selesai!', 'text-green-400');
       this.state.pieces.forEach((piece) => piece.canvas.style.border = '2px solid #22c55e');
@@ -334,13 +341,85 @@ export class PuzzleFaceApp {
     }
   }
 
+  detectPuzzleHandLoop() {
+    if (!this.state.puzzleActive || !this.state.cameraActive) {
+      this.ui.hideFingerCursor();
+      this.ui.clearPuzzleHighlight();
+      return;
+    }
+
+    if (this.state.handDetectionInProgress || !this.handposeModel) {
+      window.setTimeout(() => this.detectPuzzleHandLoop(), 50);
+      return;
+    }
+
+    this.state.handDetectionInProgress = true;
+
+    Promise.resolve(this.handposeModel.estimateHands(this.elements.video))
+      .then((predictions) => {
+        if (predictions.length > 0 && this.state.puzzleActive) {
+          const landmarks = predictions[0].landmarks;
+          const indexTip = landmarks[8];
+          const thumbTip = landmarks[4];
+
+          const vw = this.elements.video.videoWidth;
+          const vh = this.elements.video.videoHeight;
+
+          const mx = Math.max(0, Math.min(vw, vw - indexTip[0]));
+          const my = Math.max(0, Math.min(vh, indexTip[1]));
+
+          const nx = mx / vw;
+          const ny = my / vh;
+
+          const col = Math.min(APP_CONFIG.GRID_SIZE - 1, Math.floor(nx * APP_CONFIG.GRID_SIZE));
+          const row = Math.min(APP_CONFIG.GRID_SIZE - 1, Math.floor(ny * APP_CONFIG.GRID_SIZE));
+          const cellIndex = row * APP_CONFIG.GRID_SIZE + col;
+
+          this.ui.showFingerCursor();
+          this.ui.updateFingerCursor(nx * 100, ny * 100);
+          this.ui.highlightPuzzleCell(cellIndex);
+
+          const dx = thumbTip[0] - indexTip[0];
+          const dy = thumbTip[1] - indexTip[1];
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          const isPinching = distance < APP_CONFIG.PINCH_THRESHOLD;
+
+          if (isPinching && !this.wasPinching) {
+            this.wasPinching = true;
+            this.handlePieceClick(cellIndex);
+          } else if (!isPinching) {
+            this.wasPinching = false;
+          }
+        } else {
+          this.ui.hideFingerCursor();
+          this.ui.clearPuzzleHighlight();
+          this.wasPinching = false;
+        }
+      })
+      .catch((error) => {
+        console.error('Puzzle hand detection error:', error);
+      })
+      .finally(() => {
+        this.state.handDetectionInProgress = false;
+        if (this.state.puzzleActive) {
+          window.setTimeout(() => this.detectPuzzleHandLoop(), 50);
+        }
+      });
+  }
+
   resetApp() {
     this.state.puzzleActive = false;
     this.state.selectedPieceIndex = null;
     this.state.pieces = [];
     this.currentGestureType = null;
+    this.wasPinching = false;
 
-    this.elements.puzzleGrid.innerHTML = '';
+    while (this.elements.puzzleGrid.children.length > 1) {
+      this.elements.puzzleGrid.removeChild(this.elements.puzzleGrid.lastChild);
+    }
+    this.ui.hideFingerCursor();
+    this.ui.clearPuzzleHighlight();
     this.ui.setResetVisible(false);
     this.ui.setPuzzleSectionActive(false);
     this.ui.setPuzzleCopy('Area Puzzle', 'Tangkap wajah untuk menghasilkan puzzle.');

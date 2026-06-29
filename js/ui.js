@@ -11,6 +11,7 @@ export function createUiController() {
     btnReset: document.getElementById('btn-reset'),
     puzzleSection: document.getElementById('puzzle-section'),
     puzzleGrid: document.getElementById('puzzle-grid'),
+    fingerCursor: document.getElementById('finger-cursor'),
     puzzleTitle: document.getElementById('puzzle-title'),
     puzzleInstructions: document.getElementById('puzzle-instructions'),
     captureCanvas: document.getElementById('capture-canvas'),
@@ -84,7 +85,9 @@ export function createUiController() {
   }
 
   function renderPuzzleGrid(pieces, selectedIndex, onPieceSelect) {
-    elements.puzzleGrid.innerHTML = '';
+    while (elements.puzzleGrid.children.length > 1) {
+      elements.puzzleGrid.removeChild(elements.puzzleGrid.lastChild);
+    }
 
     pieces.forEach((piece, index) => {
       piece.canvas.className = 'puzzle-piece w-full h-full object-cover rounded-sm border-2 border-transparent';
@@ -106,6 +109,31 @@ export function createUiController() {
     elements.puzzleInstructions.textContent = instructions;
   }
 
+  function showFingerCursor() {
+    elements.fingerCursor.classList.remove('hidden');
+  }
+
+  function hideFingerCursor() {
+    elements.fingerCursor.classList.add('hidden');
+  }
+
+  function updateFingerCursor(percentX, percentY) {
+    elements.fingerCursor.style.left = `${percentX}%`;
+    elements.fingerCursor.style.top = `${percentY}%`;
+  }
+
+  function highlightPuzzleCell(index) {
+    const pieces = elements.puzzleGrid.querySelectorAll('.puzzle-piece');
+    pieces.forEach((el, i) => {
+      el.classList.toggle('hovered', i === index);
+    });
+  }
+
+  function clearPuzzleHighlight() {
+    const pieces = elements.puzzleGrid.querySelectorAll('.puzzle-piece');
+    pieces.forEach(el => el.classList.remove('hovered'));
+  }
+
   return {
     elements,
     updateStatus,
@@ -121,6 +149,11 @@ export function createUiController() {
     showModal,
     closeModal,
     renderPuzzleGrid,
-    setPuzzleCopy
+    setPuzzleCopy,
+    showFingerCursor,
+    hideFingerCursor,
+    updateFingerCursor,
+    highlightPuzzleCell,
+    clearPuzzleHighlight
   };
 }
